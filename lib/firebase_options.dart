@@ -85,4 +85,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'themis-9e1e1.firebasestorage.app',
     measurementId: 'G-MNPHCLJ5VY',
   );
+
 }

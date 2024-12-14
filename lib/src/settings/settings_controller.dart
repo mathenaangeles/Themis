@@ -7,11 +7,9 @@ class SettingsController with ChangeNotifier {
   final SettingsService _settingsService;
 
   ThemeMode _themeMode = ThemeMode.system;
-  Map<String, dynamic>? _userData;
   bool _isLoading = true;
 
   ThemeMode get themeMode => _themeMode;
-  Map<String, dynamic>? get userData => _userData;
   bool get isLoading => _isLoading;
 
   Future<void> loadSettings() async {
@@ -20,9 +18,8 @@ class SettingsController with ChangeNotifier {
 
     try {
       _themeMode = await _settingsService.themeMode();
-      _userData = await _settingsService.getUserData();
     } catch (e) {
-      _userData = null;
+      return;
     }
 
     _isLoading = false;
@@ -34,15 +31,5 @@ class SettingsController with ChangeNotifier {
     _themeMode = newThemeMode;
     notifyListeners();
     await _settingsService.updateThemeMode(newThemeMode);
-  }
-
-  Future<void> updateUserData(Map<String, dynamic> updatedData) async {
-    await _settingsService.updateUserData(updatedData);
-    _userData = {...?_userData, ...updatedData};
-    notifyListeners();
-  }
-
-  Future<void> logout() async {
-    await _settingsService.logoutUser();
   }
 }

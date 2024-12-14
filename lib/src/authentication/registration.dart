@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'login.dart';
+import 'package:themis/src/authentication/authentication_controller.dart';
 
 class Registration extends StatefulWidget {
   const Registration({super.key});
 
   @override
-  _RegistrationState createState() => _RegistrationState();
+  RegistrationState createState() => RegistrationState();
 }
 
-class _RegistrationState extends State<Registration> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+class RegistrationState extends State<Registration> {
+  final AuthenticationController _authenticationController =
+      AuthenticationController();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -26,36 +23,31 @@ class _RegistrationState extends State<Registration> {
   String _selectedCountryCode = "+63";
   String? _errorMessage;
 
-  Future<void> _registerAndLogin() async {
-    try {
-      UserCredential userCredential =
-          await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      String fullPhoneNumber = '$_selectedCountryCode${_phoneController.text}';
-      String uid = userCredential.user!.uid;
-      await _firestore.collection('users').doc(uid).set({
-        'type': 'regular',
-        'first_name': _firstNameController.text,
-        'last_name': _lastNameController.text,
-        'address': _addressController.text,
-        'country': _selectedCountry,
-        'phone': fullPhoneNumber,
-        'is_lawyer': false,
-      });
+  Future<void> _register() async {
+    final userData = {
+      'type': 'regular',
+      'first_name': _firstNameController.text.trim(),
+      'last_name': _lastNameController.text.trim(),
+      'address': _addressController.text.trim(),
+      'country': _selectedCountry,
+      'phone': '$_selectedCountryCode${_phoneController.text.trim()}',
+      'is_lawyer': false,
+    };
 
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      // Navigator.of(context).pushAndRemoveUntil(
-      //     MaterialPageRoute(builder: (context) => JobListView()),
-      //     (Route<dynamic> route) => false);
-    } catch (e) {
+    final String? error = await _authenticationController.register(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      userData: userData,
+    );
+
+    if (error != null) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = error;
       });
+    } else {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
     }
   }
 
@@ -66,7 +58,6 @@ class _RegistrationState extends State<Registration> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             TextField(
               controller: _firstNameController,
@@ -104,12 +95,8 @@ class _RegistrationState extends State<Registration> {
               decoration: InputDecoration(
                 labelText: 'Phone Number',
                 prefixText: _selectedCountryCode,
-                // prefixStyle: TextStyle(color: Colors.white),
               ),
               keyboardType: TextInputType.phone,
-              onChanged: (value) {
-                // TO DO: Validate the phone number
-              },
             ),
             const SizedBox(height: 8),
             TextField(
@@ -124,24 +111,20 @@ class _RegistrationState extends State<Registration> {
               obscureText: true,
             ),
             const SizedBox(height: 16),
-            if (_errorMessage != null) ...[
+            if (_errorMessage != null)
               Text(
                 _errorMessage!,
                 style: const TextStyle(color: Colors.red),
               ),
-              const SizedBox(height: 16),
-            ],
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _registerAndLogin,
+              onPressed: _register,
               child: const Text('Register'),
             ),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => Login()),
-                );
+                Navigator.pushReplacementNamed(context, '/login');
               },
               child: const Text('Already have an account? Login'),
             ),

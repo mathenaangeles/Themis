@@ -1,34 +1,37 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:themis/src/authentication/authentication_controller.dart';
 
 import 'registration.dart';
-import 'package:themis/src/settings/settings_view.dart';
-import 'package:themis/src/settings/settings_controller.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
 
   @override
-  _LoginState createState() => _LoginState();
+  LoginState createState() => LoginState();
 }
 
-class _LoginState extends State<Login> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class LoginState extends State<Login> {
+  final AuthenticationController _authenticationController =
+      AuthenticationController();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? _errorMessage;
 
-  Future<void> _signInWithEmailAndPassword() async {
-    try {
-      await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-    } catch (e) {
+  Future<void> _login() async {
+    String? error = await _authenticationController.login(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
+
+    if (error != null) {
       setState(() {
-        _errorMessage = e.toString();
+        _errorMessage = error;
       });
+    } else {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
     }
   }
 
@@ -61,7 +64,7 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 16),
             ],
             ElevatedButton(
-              onPressed: _signInWithEmailAndPassword,
+              onPressed: _login,
               child: const Text('Login'),
             ),
             const SizedBox(height: 16),

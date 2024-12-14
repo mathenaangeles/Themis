@@ -1,29 +1,12 @@
-# themis
+# Themis
 
-A new Flutter project.
+Themis is an AI-powered platform that provides access to legal counsel and automates routine tasks within the justice system. It empowers vulnerable populations to discover and exercise their rights responsibly.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application that follows the
-[simple app state management
-tutorial](https://flutter.dev/to/state-management-sample).
+1. Run `flutter pub get` to install all dependencies.
+2. [OPTIONAL] To ensure that the Firebase configuration is up-to-date, `dart pub global run flutterfire_cli:flutterfire configure`.
+3. [OPTIONAL] To redeploy all your function, run `firebase deploy --only functions`.
+4. Run `flutter run -d chrome --web-renderer html`.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
 
-## Assets
-
-The `assets` directory houses images, fonts, and any other files you want to
-include with your application.
-
-The `assets/images` directory contains [resolution-aware
-images](https://flutter.dev/to/resolution-aware-images).
-
-## Localization
-
-This project generates localized messages based on arb files found in
-the `lib/src/localization` directory.
-
-To support additional languages, please visit the tutorial on
-[Internationalizing Flutter apps](https://flutter.dev/to/internationalization).

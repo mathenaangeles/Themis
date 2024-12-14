@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+
 import 'package:themis/src/components/navbar.dart';
 
-import 'settings/settings_controller.dart';
-import 'settings/settings_view.dart';
+import 'settings/settings.dart';
 import 'authentication/login.dart';
-
-import 'package:firebase_auth/firebase_auth.dart';
+import 'settings/settings_controller.dart';
 
 class App extends StatelessWidget {
   const App({
@@ -31,7 +31,7 @@ class App extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [
-            Locale('en', ''), // Add more locales as needed
+            Locale('en', ''),
           ],
           onGenerateTitle: (BuildContext context) =>
               AppLocalizations.of(context)!.appTitle,
@@ -77,32 +77,30 @@ class AuthenticationWrapper extends StatelessWidget {
         }
 
         if (snapshot.hasData && snapshot.data != null) {
-          // User is logged in, show main content with Navbar
           switch (routeSettings.name) {
             case '/settings':
               return Scaffold(
                 appBar: AppBar(title: const Text('Settings')),
-                drawer: const Navbar(), // Add Navbar for logged-in users
-                body: SettingsView(controller: settingsController),
+                drawer: const Navbar(),
+                body: Settings(settingsController: settingsController),
               );
-            case '/home':
+            case '/documents':
               return Scaffold(
-                appBar: AppBar(title: const Text('Home')),
-                drawer: const Navbar(), // Add Navbar for logged-in users
+                appBar: AppBar(title: const Text('Documents')),
+                drawer: const Navbar(),
               );
             case '/chat':
               return Scaffold(
                 appBar: AppBar(title: const Text('Chat')),
-                drawer: const Navbar(), // Add Navbar for logged-in users
+                drawer: const Navbar(),
               );
             default:
               return Scaffold(
                 appBar: AppBar(title: const Text('Home')),
-                drawer: const Navbar(), // Add Navbar for logged-in users
+                drawer: const Navbar(),
               );
           }
         } else {
-          // User is not logged in, show login screen
           return const Login();
         }
       },

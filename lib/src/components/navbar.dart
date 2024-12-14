@@ -1,30 +1,69 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class Navbar extends StatelessWidget {
-  const Navbar({Key? key}) : super(key: key);
+import 'package:themis/src/authentication/authentication_controller.dart';
+
+class Navbar extends StatefulWidget {
+  const Navbar({super.key});
+
+  @override
+  NavbarState createState() => NavbarState();
+}
+
+class NavbarState extends State<Navbar> {
+  final AuthenticationController _authenticationController =
+      AuthenticationController();
 
   @override
   Widget build(BuildContext context) {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-    final user = _auth.currentUser;
-
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
-            accountName: Text(user?.displayName ?? 'Guest'),
-            accountEmail: Text(user?.email ?? 'Not logged in'),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(user?.displayName?.substring(0, 1) ?? 'G'),
+            accountName: FutureBuilder<Map<String, dynamic>?>(
+              future: _authenticationController.getCurrentUserDetails(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return Text('');
+                }
+                if (userSnapshot.hasError) {
+                  return Text('ERROR: ${userSnapshot.error}');
+                }
+                final userData = userSnapshot.data;
+                return Text(
+                  userData != null
+                      ? userData['first_name'] + ' ' + userData['last_name'] ??
+                          'Guest'
+                      : 'Guest',
+                );
+              },
+            ),
+            accountEmail:
+                Text(_authenticationController.getCurrentUser()?.email ?? ''),
+            currentAccountPicture: FutureBuilder<Map<String, dynamic>?>(
+              future: _authenticationController.getCurrentUserDetails(),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+
+                if (userSnapshot.hasError) {
+                  return const Icon(Icons.account_circle);
+                }
+                final userData = userSnapshot.data;
+                String firstName =
+                    userData != null ? userData['first_name'] ?? 'G' : 'G';
+                return CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Text(firstName.substring(0, 1)),
+                );
+              },
             ),
           ),
           ListTile(
-            title: const Text('Home'),
+            title: const Text('Documents'),
             onTap: () {
-              Navigator.pushReplacementNamed(context, '/home');
+              Navigator.pushReplacementNamed(context, '/documents');
             },
           ),
           ListTile(
@@ -39,14 +78,15 @@ class Navbar extends StatelessWidget {
               Navigator.pushReplacementNamed(context, '/settings');
             },
           ),
-          if (user != null)
-            ListTile(
-              title: const Text('Logout'),
-              onTap: () async {
-                await _auth.signOut();
+          ListTile(
+            title: const Text('Logout'),
+            onTap: () async {
+              await _authenticationController.logout();
+              if (mounted) {
                 Navigator.pushReplacementNamed(context, '/login');
-              },
-            ),
+              }
+            },
+          )
         ],
       ),
     );

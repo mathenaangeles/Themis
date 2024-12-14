@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 // import 'settings/settings_view.dart';
 // import 'sample_item_details_view.dart';
 
-class SampleItemListView extends StatelessWidget {
-  const SampleItemListView({super.key});
+class Documents extends StatelessWidget {
+  const Documents({super.key});
 
-  static const routeName = '/';
+  static const routeName = '/documents';
 
   @override
   Widget build(BuildContext context) {
