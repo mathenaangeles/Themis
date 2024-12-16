@@ -1,71 +1,190 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-// import 'package:themis/src/settings/settings_controller.dart';
-// import 'package:themis/src/settings/settings_view.dart';
-// import 'settings/settings_view.dart';
-// import 'sample_item_details_view.dart';
+import 'package:provider/provider.dart';
 
-class Documents extends StatelessWidget {
+import 'package:themis/src/documents/document.dart';
+import 'package:themis/src/documents/documents_controller.dart';
+import 'package:themis/src/documents/forms/demand_letter.dart';
+
+class Documents extends StatefulWidget {
   const Documents({super.key});
 
   static const routeName = '/documents';
 
   @override
+  State<Documents> createState() => _DocumentsState();
+}
+
+class _DocumentsState extends State<Documents> {
+  TextEditingController _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Ensure that the fetchUserDocuments() call happens after the widget build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final documentsController =
+          Provider.of<DocumentsController>(context, listen: false);
+      documentsController.fetchUserDocuments();
+      documentsController.filterDocuments('');
+    });
+
+    _searchController.addListener(() {
+      final documentsController =
+          Provider.of<DocumentsController>(context, listen: false);
+      documentsController.filterDocuments(_searchController.text);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final documentsController = Provider.of<DocumentsController>(context);
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sample Items'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to the settings page
-              // Navigator.restorablePushNamed(context, SettingsView(controller: SettingsController(_settingsService)).routeName);
-            },
-          ),
-        ],
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('documents').snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: documentsController.isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Create New Document',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  DocumentCard(
+                      title: 'Demand Letter',
+                      icon: Icons.document_scanner,
+                      onTap: () =>
+                          Navigator.pushNamed(context, DemandLetter.routeName)),
+                  DocumentCard(
+                      title: 'Affidavit',
+                      icon: Icons.assignment,
+                      onTap: () => null),
+                  DocumentCard(
+                      title: 'Contractor Agreement',
+                      icon: Icons.business,
+                      onTap: () => null),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Search Documents',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Search Documents',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.search),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Documents',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Expanded(
+                    child: documentsController.filteredDocuments.isEmpty
+                        ? const Center(child: Text('No documents found.'))
+                        : SizedBox.expand(
+                            child: DataTable(
+                              columnSpacing: 20,
+                              columns: const [
+                                DataColumn(label: Text('Delete')),
+                                DataColumn(label: Text('Document Name')),
+                                DataColumn(label: Text('Timestamp')),
+                                DataColumn(label: Text('Status')),
+                              ],
+                              rows: documentsController.filteredDocuments
+                                  .map<DataRow>((document) {
+                                return DataRow(cells: [
+                                  DataCell(IconButton(
+                                    icon: const Icon(Icons.delete),
+                                    onPressed: () async {
+                                      await documentsController
+                                          .deleteDocument(document['id']);
+                                    },
+                                  )),
+                                  DataCell(
+                                    GestureDetector(
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => Document(
+                                                documentId: document['id']),
+                                          ),
+                                        );
+                                      },
+                                      child:
+                                          Text(document['title'] ?? 'Untitled'),
+                                    ),
+                                  ),
+                                  DataCell(Text(
+                                    document['timestamp'] != null
+                                        ? document['timestamp']
+                                            .toDate()
+                                            .toString()
+                                        : 'N/A',
+                                  )),
+                                  DataCell(
+                                    GestureDetector(
+                                      onTap: () {
+                                        // Placeholder for status handling
+                                      },
+                                      child: Chip(
+                                        label: Text(
+                                          document['status'] ?? 'Draft',
+                                          style: const TextStyle(
+                                              color: Colors.white),
+                                        ),
+                                        backgroundColor:
+                                            Colors.deepPurpleAccent,
+                                      ),
+                                    ),
+                                  ),
+                                ]);
+                              }).toList(),
+                            ),
+                          ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+}
 
-          if (snapshot.hasError) {
-            return const Center(child: Text('Error loading data'));
-          }
+class DocumentCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final VoidCallback onTap;
 
-          if (snapshot.hasData && snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text('No items found.'));
-          }
+  const DocumentCard({
+    required this.title,
+    required this.icon,
+    required this.onTap,
+  });
 
-          // If data exists, display the list
-          var items = snapshot.data!.docs;
-          return ListView.builder(
-            itemCount: items.length,
-            itemBuilder: (BuildContext context, int index) {
-              var item = items[index];
-              var itemId = item.id;
-              var itemTitle =
-                  item['title']; // Assuming each document has a 'title' field
-
-              return ListTile(
-                title: Text(itemTitle),
-                leading: const CircleAvatar(
-                  foregroundImage: AssetImage('assets/images/flutter_logo.png'),
-                ),
-                onTap: () {
-                  // Navigate to the details page with the selected item
-                  // Navigator.restorablePushNamed(
-                  //   context,
-                  //   const SampleItemListView().routeName,
-                  // );
-                },
-              );
-            },
-          );
-        },
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: Icon(icon),
+        title: Text(title),
+        onTap: onTap,
       ),
     );
   }

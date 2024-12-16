@@ -59,6 +59,24 @@ class RegistrationState extends State<Registration> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Get started on your legal journey',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Join our community to unlock smarter, faster, and more affordable legal aid.',
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // Registration form fields
             TextField(
               controller: _firstNameController,
               decoration: const InputDecoration(labelText: 'First Name'),
@@ -117,16 +135,32 @@ class RegistrationState extends State<Registration> {
                 style: const TextStyle(color: Colors.red),
               ),
             const SizedBox(height: 16),
+
+            // Register button
             ElevatedButton(
               onPressed: _register,
               child: const Text('Register'),
+              style: ElevatedButton.styleFrom(
+                minimumSize: Size(double.infinity, 50),
+              ),
             ),
             const SizedBox(height: 16),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: const Text('Already have an account? Login'),
+
+            // Already have an account and Login in the same line
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Already have an account? ',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                  child: const Text('Login'),
+                ),
+              ],
             ),
           ],
         ),

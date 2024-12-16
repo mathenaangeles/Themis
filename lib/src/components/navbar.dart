@@ -20,6 +20,9 @@ class NavbarState extends State<Navbar> {
         padding: EdgeInsets.zero,
         children: [
           UserAccountsDrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.deepPurple[600],
+            ),
             accountName: FutureBuilder<Map<String, dynamic>?>(
               future: _authenticationController.getCurrentUserDetails(),
               builder: (context, userSnapshot) {
@@ -38,38 +41,52 @@ class NavbarState extends State<Navbar> {
                 );
               },
             ),
-            accountEmail:
-                Text(_authenticationController.getCurrentUser()?.email ?? ''),
+            accountEmail: Text(
+              _authenticationController.getCurrentUser()?.email ?? '',
+            ),
             currentAccountPicture: FutureBuilder<Map<String, dynamic>?>(
               future: _authenticationController.getCurrentUserDetails(),
               builder: (context, userSnapshot) {
                 if (userSnapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
                 }
-
                 if (userSnapshot.hasError) {
                   return const Icon(Icons.account_circle);
                 }
                 final userData = userSnapshot.data;
                 String firstName =
                     userData != null ? userData['first_name'] ?? 'G' : 'G';
+
                 return CircleAvatar(
                   backgroundColor: Colors.white,
-                  child: Text(firstName.substring(0, 1)),
+                  child: Text(
+                    firstName.substring(0, 1),
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurple[300],
+                    ),
+                  ),
                 );
               },
             ),
           ),
           ListTile(
-            title: const Text('Documents'),
-            onTap: () {
-              Navigator.pushReplacementNamed(context, '/documents');
-            },
-          ),
-          ListTile(
             title: const Text('Chat'),
             onTap: () {
               Navigator.pushReplacementNamed(context, '/chat');
+            },
+          ),
+          ListTile(
+            title: const Text('Directory'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/directory');
+            },
+          ),
+          ListTile(
+            title: const Text('Documents'),
+            onTap: () {
+              Navigator.pushReplacementNamed(context, '/documents');
             },
           ),
           ListTile(

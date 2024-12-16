@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "themis-9e1e1"
-  }
+    "default": "themis-9e1e1",
+    "themis": "themis-9e1e1"
+  },
+  "targets": {},
+  "etags": {}
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:themis/src/authentication/authentication_controller.dart';
-
 import 'registration.dart';
 
 class Login extends StatefulWidget {
@@ -43,19 +42,39 @@ class LoginState extends State<Login> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Welcome back',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'We are here to streamline and optimize legal workflows with AI-driven insights.',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Email input field
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
               keyboardType: TextInputType.emailAddress,
             ),
             const SizedBox(height: 8),
+            // Password input field
             TextField(
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
             ),
             const SizedBox(height: 16),
+            // Error message display
             if (_errorMessage != null) ...[
               Text(
                 _errorMessage!,
@@ -63,19 +82,28 @@ class LoginState extends State<Login> {
               ),
               const SizedBox(height: 16),
             ],
-            ElevatedButton(
-              onPressed: _login,
-              child: const Text('Login'),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _login,
+                child: const Text('Login'),
+              ),
             ),
             const SizedBox(height: 16),
-            TextButton(
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => Registration()),
-                );
-              },
-              child: const Text('Don\'t have an account? Register'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text("Don't have an account yet? "),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => Registration()),
+                    );
+                  },
+                  child: const Text('Register'),
+                ),
+              ],
             ),
           ],
         ),
